@@ -1,2 +1,4 @@
 .idea/
 .sesskey
+__pycache__/
+*.pyc
