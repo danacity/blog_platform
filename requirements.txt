@@ -1,0 +1,10 @@
+python-fasthtml
+sqlite_minutils
+pandas
+fastsql
+numpy
+fastcore
+monsterui
+markdown2
+mistletoe
+lxml

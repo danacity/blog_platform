@@ -1,0 +1,141 @@
+from fasthtml.common import *
+from monsterui.all import *
+from datetime import datetime, date
+from pathlib import Path
+import yaml
+from fasthtml.components import Uk_theme_switcher
+
+hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()]
+app, rt = fast_app(hdrs=hdrs, live=True)
+
+def read_posts():
+   posts = []
+   posts_dir = Path('posts')
+   for file_path in posts_dir.glob('*.md'):
+       with open(file_path, 'r') as file:
+           content = file.read()
+           parts = content.split('---')
+           if len(parts) > 2:
+               post = yaml.safe_load(parts[1])
+               post['slug'] = file_path.stem
+               post['content'] = parts[2].strip()
+               
+               if 'excerpt' not in post:
+                   lines = post['content'].split('\n')
+                   for line in lines:
+                       if line.strip() and not line.strip().startswith('!['):
+                           post['excerpt'] = line.strip()
+                           break
+               
+               if 'date' in post:
+                   if isinstance(post['date'], str):
+                       post['date'] = datetime.fromisoformat(post['date'])
+                   elif isinstance(post['date'], date):
+                       post['date'] = datetime.combine(post['date'], datetime.min.time())
+               
+               if not post.get("draft", False):
+                   posts.append(post)
+   
+   return sorted(posts, key=lambda x: x.get('date', datetime.min), reverse=True)
+
+def BlogCard(post):
+    return Card(
+        DivLAligned(
+            Div(cls="flex flex-col md:flex-row w-full gap-4")(
+                A(Img(src=f"/public/images/{post['slug']}.jpg"), cls="w-full max-w-48"),
+                P(post["excerpt"], cls="text-muted-foreground")
+            )
+        ),
+        header=H4(post["title"], cls="text-primary font-bold"),
+        footer=DivFullySpaced(
+            Span(post["date"].strftime("%b %d, %Y"), cls="text-muted-foreground"),
+            Button("Read More",
+                  hx_get=f"/posts/{post['slug']}", 
+                  hx_push_url="true",
+                  hx_target="#main-content",
+                  cls="bg-primary text-primary-foreground hover:bg-primary/70")
+        )
+    )
+
+@rt('/posts/{slug}')
+def get_post(slug: str):
+   with open(f'posts/{slug}.md', 'r') as file:
+       content = file.read()
+   post_content = content.split('---')[2]
+   frontmatter = yaml.safe_load(content.split('---')[1])
+   return Div(
+       H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
+       P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
+       Div(render_md(post_content), cls="prose max-w-none")
+   )
+
+
+@rt
+def index():
+   posts = read_posts()
+   return Container(
+        NavBarContainer(
+            NavBarLSide(
+    Div(
+        Button("☰", cls="hover:bg-primary rounded-lg p-2", 
+               hx_on_click="htmx.toggleClass('#drawer-panel', 'hidden')"),
+        Div(cls="w-px h-6 bg-primary/30 mx-1"),
+        A(UkIcon('home', height=30, width=30, stroke_width=2), 
+          cls=AT.primary + "hover:bg-primary hover:text-secondary rounded-lg p-2", href="/"),cls="flex items-center"),
+          Div(H1("Daniel Armstrong", cls=[TextT.primary, "text-2xl font-bold"]),
+              Div(
+                A(UkIcon('github', height=16, width=16), 
+                  href="https://github.com/danacity", cls="hover:text-primary transition-colors", target="_blank"),
+                A(UkIcon('mail', height=16, width=16), 
+                    href="mailto:Dan@efels.com", cls="hover:text-primary transition-colors"),
+                A(UkIcon('linkedin', height=16, width=16), 
+                    href="https://www.linkedin.com/in/daniel-r-armstrong/", cls="hover:text-primary transition-colors", target="_blank"),
+                A(UkIcon('twitter', height=16, width=16), 
+                    href="https://x.com/efels_com", cls="hover:text-primary transition-colors", target="_blank"),
+                #A(UkIcon('youtube', height=16, width=16), 
+                #    href="https://youtube.com/@yourusername", cls="hover:text-primary transition-colors", target="_blank"),
+                #A(UkIcon('rss', height=16, width=16), 
+                #    href="/rss.xml", cls="hover:text-primary transition-colors"),
+                cls="flex gap-3 mt-0 mb-1 text-muted-foreground"),
+                cls="flex flex-col")),
+           NavBarRSide(
+                    Div(
+                        A(Input(placeholder='search')),
+                        A(Button(UkIcon('grid', height=16, width=16, stroke_width=2),"My Gallery",cls='flex items-center gap-1'),
+                        href="https://myfasthtmlgallery-production.up.railway.app/", cls=[AT.primary + " hover:bg-secondary hover:text-primary"]),
+                        A(Button(UkIcon('palette',height=16, width=16, stroke_width=2), "Appearance",cls='flex items-center gap-1' ),
+                                cls=[AT.primary,"hover:bg-secondary hover:text-primary"]),
+                        DropDownNavContainer(Div(Uk_theme_switcher(), cls="space-y-8 p-8 min-w-[350px] min-h-[150px] bg-background rounded-lg"),),
+                        cls="flex flex-col md:flex-row items-end gap-2"
+                    ),
+                    cls="gap-5"
+                ),
+                cls="bg-card border-b border-10 border-primary/50 shadow-lg sticky top-0 rounded-lg z-50"),
+        DivLAligned(
+            NavContainer(
+                NavHeaderLi("Blog Posts", cls=TextT.primary),
+                *[Li(A(post["title"], 
+                     hx_get=f"/posts/{post['slug']}", 
+                     hx_target="#main-content",
+                     hx_push_url="true",
+                     cls="hover:bg-accent"
+                   )) for post in posts],
+               uk_nav=True,
+               cls=f"{NavT.secondary} border-r border-primary/50 hidden w-64 mt-4",
+               id="drawer-panel"
+           ),
+           Grid(
+               *[BlogCard(p) for p in posts],
+               cols_sm=1, 
+               cols_md=1, 
+               cols_lg=2, 
+               cols_xl=3,
+               id="main-content",
+               cls=[f"{NavT.secondary}",'gap-4 mt-4 ml-4' if len(posts) > 1 else 'gap-0 mt-4 ml-4']
+           ),
+           cls="flex items-start"
+       )
+   )
+
+if __name__ == "__main__":
+   serve()
