@@ -9,9 +9,9 @@ excerpt: This is for all the JavaScript Haters out there, you too can full stack
 Like lima beans, JavaScript is something I just can't stomach, no matter how it's prepared, it's just not right. Every time I see JavaScript, I feel compelled to tell everyone how much I hate it, and overall most people agree, the only defense heard is "Yeah but, you need to eat your vegetables." but surely there must be a better way. For a very long time, I felt that my distaste for JavaScript was holding me back, but every time I tried, I just couldn't stomach it.
 
 With the advancement of AI-powered tools like Bolt.new, Chatgpt-Canvas, Devin, Anthropic-Artifacts, OpenHands, etc., I started to feel it might be time to try lima beans again, I mean JavaScript. Based on my most recent experience there are 3 unsolved problems when using AI to build web applications that are worth talking about:
-- 1. JavaScript 
-- 2. AI Limitations
-- 3. No Clear Path to Production
+ 1. JavaScript 
+ 2. AI Limitations
+ 3. No Clear Path to Production
 
 #### 1. JavaScript (Lima beans)
 Web development is like a kitchen that keeps coming up with new ways to serve lima beans: React, Vue.js, Angular, Svelte, Solid - they're all just different seasonings on the same vegetable I don't want to eat. And when you add in HTML, CSS, and back-end integrations, it's like they're hiding lima beans in every dish. To me it's simple, I'm not going to learn it at this stage of my career. If I have to use it, I'll either have to pay someone to build it or hope an AI can do the job.
