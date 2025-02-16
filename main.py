@@ -55,12 +55,12 @@ def vertical_divider():
     return Div(cls="w-px h-6 bg-primary/30 mx-1")
 
 def header_content():
-    return NavBarContainer(
-        NavBarLSide(
+    return NavContainer(
+        DivLAligned(
             Div(hamburger_button(), vertical_divider(), home_button(), cls="flex items-center"),
             Div(H1("Daniel Armstrong", cls=[TextT.primary, "text-2xl font-bold"]), social_links(), cls="flex flex-col")
         ),
-        NavBarRSide(
+        DivRAligned(
             Div(search_bar(),gallery_link(),theme_switcher(),cls="flex flex-col md:flex-row items-end gap-2"),
             cls="gap-5"
         ),
