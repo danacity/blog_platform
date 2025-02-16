@@ -62,9 +62,9 @@ def header_content():
         ),
         DivRAligned(
             Div(search_bar(),gallery_link(),theme_switcher(),cls="flex flex-col md:flex-row items-end gap-2"),
-            cls="flex flex-col gap-5"
+            cls="gap-5"
         ),
-        cls="bg-card border-b border-10 border-primary/50 shadow-lg sticky top-0 rounded-lg z-50"
+        cls="bg-card border-b border-10 border-primary/50 shadow-lg sticky top-0 rounded-lg z-50 flex items-center justify-between"  # Added flex, items-center, and justify-between
     )
 
 def navigation_panel(posts):
