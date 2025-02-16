@@ -5,6 +5,12 @@ from pathlib import Path
 import yaml
 from fasthtml.components import Uk_theme_switcher
 
+og_headers = [
+    Meta(property="og:title", content="Dan's Blog"),
+    #Meta(property="og:image", content="[URL to your preview image]"),
+    #Meta(property="og:description", content="Your blog description")
+]
+
 hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()]
 app, rt = fast_app(hdrs=hdrs, live=True)
 
@@ -141,7 +147,7 @@ def blog_grid(posts):
 @rt
 def index():
     posts = read_posts()
-    return Container(
+    return Title('this title'), Container(
         header_content(),
         DivLAligned(
             navigation_panel(posts),

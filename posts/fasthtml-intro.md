@@ -9,4 +9,6 @@ excerpt: A comprehensive guide to building modern web applications with FastHTML
 
 FastHTML is revolutionizing how we build web applications in Python. This guide will walk you through the basics and show you how to create your first FastHTML application.
 
-Let's start with a simple example...
+## How-to change the HTML Title 
+The default Title for your site/app with be:  
+![Default Html Title](/public/images/20250216034414.png)
