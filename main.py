@@ -69,14 +69,15 @@ def header_content():
 
 def navigation_panel(posts):
     return NavContainer(
-        NavHeaderLi("Blog Posts", cls=TextT.primary),
+        #NavHeaderLi("Blog Posts", cls=TextT.primary),
+        NavHeaderLi("Blog Posts"),
         *[Li(A(post["title"], 
               hx_get=f"/posts/{post['slug']}", 
               hx_target="#main-content",  
               hx_push_url="true", 
               cls="hover:bg-accent")) for post in posts],
         uk_nav=True,
-        cls=f"{NavT.secondary} border-r border-primary/50 hidden w-64 mt-4",
+        cls=f"{NavT.secondary} border-r border-primary/50 hidden w-64 mt-4",  # Removed mt-4
         id="nav-panel"
     )
 
@@ -149,7 +150,7 @@ def index():
     posts = read_posts()
     return Title('this title'), Container(
         header_content(),
-        DivLAligned(
+        Div(
             navigation_panel(posts),
             blog_grid(posts),
             cls="flex items-start"
