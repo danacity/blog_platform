@@ -32,7 +32,7 @@ def gallery_link():
     return A(
         Button(UkIcon('grid', height=16, width=16, stroke_width=2), "My Gallery",
               cls='flex items-center gap-1'),
-        href="https://gallery.efels.com/", 
+        href="https://www.gallery.efels.com/", 
         cls=[AT.primary + " hover:bg-secondary hover:text-primary"]
     )
 
@@ -148,7 +148,7 @@ def blog_grid(posts):
 @rt
 def index():
     posts = read_posts()
-    return Title('this title'), Container(
+    return Title('Efels Blog'), Container(
         header_content(),
         Div(
             navigation_panel(posts),
