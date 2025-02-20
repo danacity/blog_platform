@@ -14,7 +14,7 @@ def social_meta(platform, post=None, type="website"):
 
     if post is None:  # Global headers
         return [
-            Meta(name="image", property="og:image", content=default_image),
+            Meta(name="image", property="og:image", content='www.blog.efels.com/public/images/blog-default.jpg'),
             Meta(name="title", property="og:title", content="Dan's Blog"),
             Meta(name="url", property="og:url", content=f"https://{blog_url}"),
             Meta(name="type", property="og:type", content=type),
