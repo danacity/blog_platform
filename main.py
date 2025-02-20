@@ -31,13 +31,17 @@ default_image = "/public/images/blog-default.jpg"
 #         Meta(**{"property" if platform == "og" else "name": f"{platform}:url"}, content=f"https://{blog_url}/posts/{post['slug']}")
 #     ]
 def social_meta(platform, post=None, type="website"):
+    blog_url = "www.blog.efels.com"  # Move this to top of file with other constants
+    default_image = "/public/images/blog-default.jpg"
+    
+    # Build full image URL
     image_path = default_image if post is None else f"/public/images/{post['slug']}.jpg"
-    print(f"Platform: {platform}, Post: {post}, Image path: {image_path}")  # Debug line
+    full_image_url = f"https://{blog_url}{image_path}"
 
     if post is None:  # Global headers
         return [
             Meta(property="og:title", content="Dan's Blog"),
-            Meta(property="og:image", content=f"https://{blog_url}{image_path}"),
+            Meta(property="og:image", content=full_image_url),
             Meta(property="og:url", content=f"https://{blog_url}"),
             Meta(property="og:type", content=type),
             Meta(name="twitter:card", content="summary"),
@@ -45,6 +49,16 @@ def social_meta(platform, post=None, type="website"):
             Meta(name="twitter:site", content="@efels_com"),
             Meta(name="twitter:domain", content=blog_url)
         ]
+    
+    # Post-specific metadata
+    return [
+        *([Meta(property="og:type", content="article")] if platform == "og" else []),
+        Meta(**{"property" if platform == "og" else "name": f"{platform}:title"}, content=post["title"]),
+        Meta(**{"property" if platform == "og" else "name": f"{platform}:description"}, content=post.get("excerpt", "")),
+        Meta(**{"property" if platform == "og" else "name": f"{platform}:image"}, content=full_image_url),
+        Meta(**{"property" if platform == "og" else "name": f"{platform}:url"}, content=f"https://{blog_url}/posts/{post['slug']}")
+    ]
+
 # For global headers (site-wide)
 #og_headers = social_meta(None)
 hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] #+ og_headers
@@ -169,11 +183,11 @@ def get_post(slug: str):
         content = file.read()
     post_content = content.split('---')[2]
     frontmatter = yaml.safe_load(content.split('---')[1])
-    frontmatter['slug'] = slug
+    frontmatter['slug'] = slug  # Make sure slug is in frontmatter
     
     return Title(frontmatter["title"]), Div(
-        *social_meta("twitter", frontmatter),
-        *social_meta("og", frontmatter),
+        *social_meta("twitter", frontmatter),  # Pass complete frontmatter
+        *social_meta("og", frontmatter),       # Pass complete frontmatter
         H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
         P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
         Div(render_md(post_content), cls="prose max-w-none"),
