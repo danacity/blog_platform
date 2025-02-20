@@ -59,11 +59,15 @@ def gallery_link():
         cls=[AT.primary + " hover:bg-secondary hover:text-primary"]
     )
 
+# def theme_switcher():
+#     return Div(
+#                 A(Button(UkIcon('palette', height=16, width=16, stroke_width=2), "Appearance", cls='flex items-center gap-1'),cls=[AT.primary, "hover:bg-secondary hover:text-primary"]),
+#                 DropDownNavContainer(Div(Uk_theme_switcher(), cls="space-y-8 p-8 min-w-[350px] min-h-[150px] bg-background rounded-lg"))
+#             )
 def theme_switcher():
-    return Div(
-                A(Button(UkIcon('palette', height=16, width=16, stroke_width=2), "Appearance", cls='flex items-center gap-1'),cls=[AT.primary, "hover:bg-secondary hover:text-primary"]),
-                DropDownNavContainer(Div(Uk_theme_switcher(), cls="space-y-8 p-8 min-w-[350px] min-h-[150px] bg-background rounded-lg"))
-            )
+    return Div(A(Button(UkIcon('palette', height=16, width=16, stroke_width=2), 
+                        "Appearance", cls='flex items-center gap-1'), cls=[AT.primary, "hover:bg-secondary hover:text-primary"]),
+                DropDownNavContainer(ThemePicker(radii=False, shadows=False, font=False )))
 
 def hamburger_button():
     return Button("☰", cls="hover:bg-primary rounded-lg p-2", 
@@ -151,22 +155,22 @@ def BlogCard(post):
         ))
 
 @rt('/posts/{slug}')
-def get_post(slug: str):
+def get_post(slug: str, request=None):
     with open(f'posts/{slug}.md', 'r') as file:
         content = file.read()
     post_content = content.split('---')[2]
     frontmatter = yaml.safe_load(content.split('---')[1])
-    frontmatter['slug'] = slug  # Make sure slug is in frontmatter
-    
-    return Title(frontmatter["title"]), Div(
-        *social_meta("twitter", frontmatter),  # Pass complete frontmatter
-        *social_meta("og", frontmatter),       # Pass complete frontmatter
+    frontmatter['slug'] = slug
+
+    content = Div(
         H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
         P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
         Div(render_md(post_content), cls="prose max-w-none"),
         cls="w-full px-8 py-4",
         id="main-content"
     )
+
+    return content if request.headers.get('HX-Request') else Container(header_content(), content)
 
 def blog_grid(posts):
     return Grid(*[BlogCard(p) for p in posts],
