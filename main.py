@@ -39,10 +39,10 @@ def social_meta(platform, post=None, type="website"):
 
     if post is None:  # Global headers
         return [
-            Meta(property="og:title", content="Dan's Blog"),
-            Meta(name="image", property="og:image", content=full_image_url),  # Added name attribute
-            Meta(property="og:url", content=f"https://{blog_url}"),
-            Meta(property="og:type", content=type),
+            Meta(name="image", property="og:image", content=full_image_url),
+            Meta(name="title", property="og:title", content="Dan's Blog"),
+            Meta(name="url", property="og:url", content=f"https://{blog_url}"),
+            Meta(name="type", property="og:type", content=type),
             Meta(name="twitter:card", content="summary"),
             Meta(name="twitter:creator", content="@efels_com"),
             Meta(name="twitter:site", content="@efels_com"),
@@ -50,11 +50,11 @@ def social_meta(platform, post=None, type="website"):
         ]
     
     return [
-        *([Meta(property="og:type", content="article")] if platform == "og" else []),
-        Meta(**{"property" if platform == "og" else "name": f"{platform}:title"}, content=post["title"]),
-        Meta(**{"property" if platform == "og" else "name": f"{platform}:description"}, content=post.get("excerpt", "")),
-        Meta(name="image", property="og:image", content=full_image_url),  # Added name attribute
-        Meta(**{"property" if platform == "og" else "name": f"{platform}:url"}, content=f"https://{blog_url}/posts/{post['slug']}")
+        Meta(name="type", property="og:type", content="article"),
+        Meta(name="title", property=f"{platform}:title", content=post["title"]),
+        Meta(name="description", property=f"{platform}:description", content=post.get("excerpt", "")),
+        Meta(name="image", property=f"{platform}:image", content=full_image_url),
+        Meta(name="url", property=f"{platform}:url", content=f"https://{blog_url}/posts/{post['slug']}")
     ]
 
 # For global headers (site-wide)
