@@ -5,17 +5,20 @@ from pathlib import Path
 import yaml
 from fasthtml.components import Uk_theme_switcher
 
-def social_meta(platform, post=None, default_image="/public/images/efels_blog.png", url=None, type="website"):
+blog_url = "www.blog.efels.com"
+default_image = "/public/images/blog-default.jpg"
+
+def social_meta(platform, post=None, type="website"):
    if post is None:  # Global headers
        return [
            Meta(property="og:title", content="Dan's Blog"),
-           Meta(property="og:image", content=default_image),
-           Meta(property="og:url", content=url or "https://efels.com"),
+           Meta(property="og:image", content=f"https://{blog_url}{default_image}"),
+           Meta(property="og:url", content=f"https://{blog_url}"),
            Meta(property="og:type", content=type),
            Meta(name="twitter:card", content="summary"),
-           Meta(name="twitter:creator", content="@efels_com"), 
+           Meta(name="twitter:creator", content="@efels_com"),
            Meta(name="twitter:site", content="@efels_com"),
-           Meta(name="twitter:domain", content="efels.com")
+           Meta(name="twitter:domain", content=blog_url)
        ]
    
    # Post-specific
@@ -30,16 +33,12 @@ def social_meta(platform, post=None, default_image="/public/images/efels_blog.pn
        *card,
        Meta(**{prefix: f"{platform}:title"}, content=post["title"]),
        Meta(**{prefix: f"{platform}:description"}, content=post.get("excerpt", "")),
-       Meta(**{prefix: f"{platform}:image"}, content=f"/public/images/{post['slug']}.jpg"),
-       Meta(**{prefix: f"{platform}:url"}, content=url or f"https://efels.com/posts/{post['slug']}")
+       Meta(**{prefix: f"{platform}:image"}, content=f"https://{blog_url}/public/images/{post['slug']}.jpg"),
+       Meta(**{prefix: f"{platform}:url"}, content=f"https://{blog_url}/posts/{post['slug']}")
    ]
 
 # For global headers (site-wide)
-og_headers = social_meta(None, 
-    default_image="/public/images/blog-default.jpg",
-    url="https://efels.com",
-    type="website"
-)
+og_headers = social_meta(None)
 hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] + og_headers
 app, rt = fast_app(hdrs=hdrs, live=True)
 
@@ -162,11 +161,11 @@ def get_post(slug: str):
         content = file.read()
     post_content = content.split('---')[2]
     frontmatter = yaml.safe_load(content.split('---')[1])
-    frontmatter['slug'] = slug  # Add this line
+    frontmatter['slug'] = slug
     
     return Title(frontmatter["title"]), Div(
-        *social_meta("twitter", frontmatter, url=f"https://efels.com/posts/{slug}"),
-        *social_meta("og", frontmatter, url=f"https://efels.com/posts/{slug}"),
+        *social_meta("twitter", frontmatter),
+        *social_meta("og", frontmatter),
         H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
         P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
         Div(render_md(post_content), cls="prose max-w-none"),
