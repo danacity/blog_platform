@@ -205,6 +205,8 @@ def blog_grid(posts):
 def index():
     posts = read_posts()
     return Title('Efels Blog'), Container(
+        *social_meta("twitter"),  # Add global social meta tags
+        *social_meta("og"),      # Add global social meta tags
         header_content(),
         Div(
             navigation_panel(posts),
