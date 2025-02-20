@@ -161,7 +161,9 @@ def get_post(slug: str):
     with open(f'posts/{slug}.md', 'r') as file:
         content = file.read()
     post_content = content.split('---')[2]
-    frontmatter = yaml.safe_load(content.split('---')[1])   
+    frontmatter = yaml.safe_load(content.split('---')[1])
+    frontmatter['slug'] = slug  # Add this line
+    
     return Title(frontmatter["title"]), Div(
         *social_meta("twitter", frontmatter, url=f"https://efels.com/posts/{slug}"),
         *social_meta("og", frontmatter, url=f"https://efels.com/posts/{slug}"),
