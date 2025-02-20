@@ -5,7 +5,8 @@ draft: false
 excerpt: How you can modify the fastHTML Gallery
 tags:
   - FastHTML
-Diataxis: Narrative
+Diataxis:
+  - Narrative
 ---
 
 ## Show your work

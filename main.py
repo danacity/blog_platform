@@ -5,13 +5,42 @@ from pathlib import Path
 import yaml
 from fasthtml.components import Uk_theme_switcher
 
-og_headers = [
-    Meta(property="og:title", content="Dan's Blog"),
-    #Meta(property="og:image", content="[URL to your preview image]"),
-    #Meta(property="og:description", content="Your blog description")
-]
+def social_meta(platform, post=None, default_image="/public/images/efels_blog.png", url=None, type="website"):
+   if post is None:  # Global headers
+       return [
+           Meta(property="og:title", content="Dan's Blog"),
+           Meta(property="og:image", content=default_image),
+           Meta(property="og:url", content=url or "https://efels.com"),
+           Meta(property="og:type", content=type),
+           Meta(name="twitter:card", content="summary"),
+           Meta(name="twitter:creator", content="@efels_com"), 
+           Meta(name="twitter:site", content="@efels_com"),
+           Meta(name="twitter:domain", content="efels.com")
+       ]
+   
+   # Post-specific
+   if platform == "twitter":
+       prefix = "name"
+       card = []
+   else:  # linkedin/og
+       prefix = "property"
+       card = [Meta(property="og:type", content="article")]
+       
+   return [
+       *card,
+       Meta(**{prefix: f"{platform}:title"}, content=post["title"]),
+       Meta(**{prefix: f"{platform}:description"}, content=post.get("excerpt", "")),
+       Meta(**{prefix: f"{platform}:image"}, content=f"/public/images/{post['slug']}.jpg"),
+       Meta(**{prefix: f"{platform}:url"}, content=url or f"https://efels.com/posts/{post['slug']}")
+   ]
 
-hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()]
+# For global headers (site-wide)
+og_headers = social_meta(None, 
+    default_image="/public/images/blog-default.jpg",
+    url="https://efels.com",
+    type="website"
+)
+hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] + og_headers
 app, rt = fast_app(hdrs=hdrs, live=True)
 
 def social_links():
@@ -132,12 +161,16 @@ def get_post(slug: str):
     with open(f'posts/{slug}.md', 'r') as file:
         content = file.read()
     post_content = content.split('---')[2]
-    frontmatter = yaml.safe_load(content.split('---')[1])
-    return Div(H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
-               P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
-               Div(render_md(post_content), cls="prose max-w-none"),
-               cls="w-full px-8 py-4",
-               id="main-content")
+    frontmatter = yaml.safe_load(content.split('---')[1])   
+    return Title(frontmatter["title"]), Div(
+        *social_meta("twitter", frontmatter, url=f"https://efels.com/posts/{slug}"),
+        *social_meta("og", frontmatter, url=f"https://efels.com/posts/{slug}"),
+        H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
+        P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
+        Div(render_md(post_content), cls="prose max-w-none"),
+        cls="w-full px-8 py-4",
+        id="main-content"
+    )
 
 def blog_grid(posts):
     return Grid(*[BlogCard(p) for p in posts],
