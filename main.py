@@ -5,31 +5,6 @@ from pathlib import Path
 import yaml
 from fasthtml.components import Uk_theme_switcher
 
-blog_url = "www.blog.efels.com"
-default_image = "/public/images/blog-default.jpg"
-
-# def social_meta(platform, post=None, type="website"):
-#     image_path = default_image if post is None else f"/public/images/{post['slug']}.jpg"
-
-#     if post is None:  # Global headers
-#         return [
-#             Meta(property="og:title", content="Dan's Blog"),
-#             Meta(property="og:image", content=f"https://{blog_url}{image_path}"),
-#             Meta(property="og:url", content=f"https://{blog_url}"),
-#             Meta(property="og:type", content=type),
-#             Meta(name="twitter:card", content="summary"),
-#             Meta(name="twitter:creator", content="@efels_com"),
-#             Meta(name="twitter:site", content="@efels_com"),
-#             Meta(name="twitter:domain", content=blog_url)
-#         ]
-    
-#     return [
-#         *([Meta(property="og:type", content="article")] if platform == "og" else []),
-#         Meta(**{"property" if platform == "og" else "name": f"{platform}:title"}, content=post["title"]),
-#         Meta(**{"property" if platform == "og" else "name": f"{platform}:description"}, content=post.get("excerpt", "")),
-#         Meta(**{"property" if platform == "og" else "name": f"{platform}:image"}, content=f"https://{blog_url}{image_path}"),
-#         Meta(**{"property" if platform == "og" else "name": f"{platform}:url"}, content=f"https://{blog_url}/posts/{post['slug']}")
-#     ]
 def social_meta(platform, post=None, type="website"):
     blog_url = "www.blog.efels.com"
     default_image = "/public/images/blog-default.jpg"
@@ -39,7 +14,7 @@ def social_meta(platform, post=None, type="website"):
 
     if post is None:  # Global headers
         return [
-            Meta(name="image", property="og:image", content=full_image_url),
+            Meta(name="image", property="og:image", content=default_image),
             Meta(name="title", property="og:title", content="Dan's Blog"),
             Meta(name="url", property="og:url", content=f"https://{blog_url}"),
             Meta(name="type", property="og:type", content=type),
