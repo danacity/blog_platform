@@ -33,8 +33,8 @@ def social_meta(platform, post=None, type="website"):
     ]
 
 # For global headers (site-wide)
-#og_headers = social_meta(None)
-hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] #+ og_headers
+og_headers = social_meta(None)
+hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] + og_headers
 app, rt = fast_app(hdrs=hdrs, live=True)
 
 def social_links():
