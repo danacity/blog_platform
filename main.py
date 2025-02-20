@@ -31,17 +31,16 @@ default_image = "/public/images/blog-default.jpg"
 #         Meta(**{"property" if platform == "og" else "name": f"{platform}:url"}, content=f"https://{blog_url}/posts/{post['slug']}")
 #     ]
 def social_meta(platform, post=None, type="website"):
-    blog_url = "www.blog.efels.com"  # Move this to top of file with other constants
+    blog_url = "www.blog.efels.com"
     default_image = "/public/images/blog-default.jpg"
     
-    # Build full image URL
     image_path = default_image if post is None else f"/public/images/{post['slug']}.jpg"
     full_image_url = f"https://{blog_url}{image_path}"
 
     if post is None:  # Global headers
         return [
             Meta(property="og:title", content="Dan's Blog"),
-            Meta(property="og:image", content=full_image_url),
+            Meta(name="image", property="og:image", content=full_image_url),  # Added name attribute
             Meta(property="og:url", content=f"https://{blog_url}"),
             Meta(property="og:type", content=type),
             Meta(name="twitter:card", content="summary"),
@@ -50,12 +49,11 @@ def social_meta(platform, post=None, type="website"):
             Meta(name="twitter:domain", content=blog_url)
         ]
     
-    # Post-specific metadata
     return [
         *([Meta(property="og:type", content="article")] if platform == "og" else []),
         Meta(**{"property" if platform == "og" else "name": f"{platform}:title"}, content=post["title"]),
         Meta(**{"property" if platform == "og" else "name": f"{platform}:description"}, content=post.get("excerpt", "")),
-        Meta(**{"property" if platform == "og" else "name": f"{platform}:image"}, content=full_image_url),
+        Meta(name="image", property="og:image", content=full_image_url),  # Added name attribute
         Meta(**{"property" if platform == "og" else "name": f"{platform}:url"}, content=f"https://{blog_url}/posts/{post['slug']}")
     ]
 
