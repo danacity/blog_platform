@@ -10,17 +10,19 @@ def social_meta(platform, post=None, type="website"):
     default_image = "/public/images/blog-default.jpg"
     
     if post is None:  # Homepage case
+        full_image_url = f"https://{blog_url}{default_image}"
         return [
-            Meta(property="og:image", content=f"https://{blog_url}{default_image}"),
+            Meta(property="og:image", content=full_image_url),
             Meta(property="og:title", content="Dan's Blog"),
             Meta(property="og:url", content=f"https://{blog_url}"),
             Meta(property="og:type", content=type),
-            Meta(name="twitter:card", content="summary"),
-            Meta(name="twitter:image", content=f"https://{blog_url}{default_image}"),
+            Meta(property="og:description", content="Personal blog about software development and tech"),  # Added description
+            Meta(name="twitter:card", content="summary_large_image"),  # Changed to large image
+            Meta(name="twitter:image", content=full_image_url),
             Meta(name="twitter:title", content="Dan's Blog"),
+            Meta(name="twitter:description", content="Personal blog about software development and tech"),  # Added description
             Meta(name="twitter:creator", content="@efels_com"),
-            Meta(name="twitter:site", content="@efels_com"),
-            Meta(name="twitter:domain", content=blog_url)
+            Meta(name="twitter:site", content="@efels_com")
         ]
     # For blog posts
     image_path = default_image if post is None else f"/public/images/{post['slug']}.jpg"
