@@ -6,44 +6,50 @@ import yaml
 #from fasthtml.components import Uk_theme_switcher
 
 def social_meta(platform, post=None, type="website"):
-    blog_url = "www.blog.efels.com"
-    default_image = "/public/images/blog-default.jpg"
-    
-    if post is None:  # Homepage case
-        full_image_url = f"https://{blog_url}{default_image}"
-        return [
-            Meta(property="og:image", content=full_image_url),
-            Meta(property="og:title", content="Dan's Blog"),
-            Meta(property="og:url", content=f"https://{blog_url}"),
-            Meta(property="og:type", content=type),
-            Meta(property="og:description", content="Personal blog about software development and tech"),  # Added description
-            Meta(name="twitter:card", content="summary_large_image"),  # Changed to large image
-            Meta(name="twitter:image", content=full_image_url),
-            Meta(name="twitter:title", content="Dan's Blog"),
-            Meta(name="twitter:description", content="Personal blog about software development and tech"),  # Added description
-            Meta(name="twitter:creator", content="@efels_com"),
-            Meta(name="twitter:site", content="@efels_com")
-        ]
-    # For blog posts
-    image_path = default_image if post is None else f"/public/images/{post['slug']}.jpg"
-    full_image_url = f"https://{blog_url}{image_path}"
-    
-    return [
-        Meta(property="og:type", content="article"),
-        Meta(property="og:title", content=post["title"]),
-        Meta(property="og:description", content=post.get("excerpt", "")),
-        Meta(property="og:image", content=full_image_url),
-        Meta(property="og:url", content=f"https://{blog_url}/posts/{post['slug']}"),
-        Meta(name="twitter:card", content="summary"),
-        Meta(name="twitter:title", content=post["title"]),
-        Meta(name="twitter:description", content=post.get("excerpt", "")),
-        Meta(name="twitter:image", content=full_image_url),
-        Meta(name="twitter:creator", content="@efels_com")
-    ]
+   blog_url = "www.blog.efels.com"
+   default_image = "/public/images/blog-default.jpg"
+   
+   # Check if post image exists, otherwise use default
+   image_path = f"/public/images/{post['slug']}.jpg" if post else default_image
+   try:
+       if post and not Path(f"public/images/{post['slug']}.jpg").exists():
+           image_path = default_image
+   except:
+       image_path = default_image
+       
+   full_image_url = f"https://{blog_url}{image_path}"
+
+   if post is None:  # Homepage case
+       return [
+           Meta(property="og:image", content=full_image_url),
+           Meta(property="og:title", content="Dan's Blog"),
+           Meta(property="og:url", content=f"https://{blog_url}"),
+           Meta(property="og:type", content=type),
+           Meta(property="og:description", content="Personal blog about software development and tech"),
+           Meta(name="twitter:card", content="summary"),
+           Meta(name="twitter:image", content=full_image_url),
+           Meta(name="twitter:title", content="Dan's Blog"),
+           Meta(name="twitter:description", content="Personal blog about software development and tech"),
+           Meta(name="twitter:creator", content="@efels_com"),
+           Meta(name="twitter:site", content="@efels_com")
+       ]
+
+   return [
+       Meta(property="og:type", content="article"),
+       Meta(property="og:title", content=post["title"]),
+       Meta(property="og:description", content=post.get("excerpt", "")),
+       Meta(property="og:image", content=full_image_url),
+       Meta(property="og:url", content=f"https://{blog_url}/posts/{post['slug']}"),
+       Meta(name="twitter:card", content="summary"),
+       Meta(name="twitter:title", content=post["title"]),
+       Meta(name="twitter:description", content=post.get("excerpt", "")),
+       Meta(name="twitter:image", content=full_image_url),
+       Meta(name="twitter:creator", content="@efels_com")
+   ]
 
 # For global headers (site-wide)
-og_headers = social_meta(None)
-hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] + og_headers
+#og_headers = social_meta(None)
+hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] #+ og_headers
 app, rt = fast_app(hdrs=hdrs, live=True)
 
 def social_links():
