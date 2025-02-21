@@ -250,8 +250,8 @@ def filter_posts(tag: str = None, diataxis: str = None):
 def index():
     posts = read_posts()
     return Title('Efels Blog'), Container(
-        *social_meta("twitter"),  
-        *social_meta("og"),     
+        *social_meta("twitter",None),  
+        *social_meta("og", None),     
         header_content(),
         Div(
             navigation_panel(posts),
