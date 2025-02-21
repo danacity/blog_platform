@@ -3,6 +3,10 @@ title: Full Stack without Javascript
 date: 2025-02-03T09:15:00+01:00
 draft: false
 excerpt: This is for all the JavaScript Haters out there, you too can full stack. 
+tags:
+  - FastHTML
+Diataxis:
+  - Narrative
 ---
 
 ## I Hate JavaScript
