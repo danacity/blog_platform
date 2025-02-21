@@ -3,33 +3,40 @@ from monsterui.all import *
 from datetime import datetime, date
 from pathlib import Path
 import yaml
-from fasthtml.components import Uk_theme_switcher
+#from fasthtml.components import Uk_theme_switcher
 
 def social_meta(platform, post=None, type="website"):
     blog_url = "www.blog.efels.com"
     default_image = "/public/images/blog-default.jpg"
     
-    image_path = default_image if post is None else f"/public/images/{post['slug']}.jpg"
-    full_image_url = f"https://{blog_url}{image_path}"
-
-    if post is None:  # Global headers
+    if post is None:  # Homepage case
         return [
-            Meta(name="image", property="og:image", content='www.blog.efels.com/public/images/blog-default.jpg'),
-            Meta(name="title", property="og:title", content="Dan's Blog"),
-            Meta(name="url", property="og:url", content=f"https://{blog_url}"),
-            Meta(name="type", property="og:type", content=type),
+            Meta(property="og:image", content=f"https://{blog_url}{default_image}"),
+            Meta(property="og:title", content="Dan's Blog"),
+            Meta(property="og:url", content=f"https://{blog_url}"),
+            Meta(property="og:type", content=type),
             Meta(name="twitter:card", content="summary"),
+            Meta(name="twitter:image", content=f"https://{blog_url}{default_image}"),
+            Meta(name="twitter:title", content="Dan's Blog"),
             Meta(name="twitter:creator", content="@efels_com"),
             Meta(name="twitter:site", content="@efels_com"),
             Meta(name="twitter:domain", content=blog_url)
         ]
+    # For blog posts
+    image_path = default_image if post is None else f"/public/images/{post['slug']}.jpg"
+    full_image_url = f"https://{blog_url}{image_path}"
     
     return [
-        Meta(name="type", property="og:type", content="article"),
-        Meta(name="title", property=f"{platform}:title", content=post["title"]),
-        Meta(name="description", property=f"{platform}:description", content=post.get("excerpt", "")),
-        Meta(name="image", property=f"{platform}:image", content=full_image_url),
-        Meta(name="url", property=f"{platform}:url", content=f"https://{blog_url}/posts/{post['slug']}")
+        Meta(property="og:type", content="article"),
+        Meta(property="og:title", content=post["title"]),
+        Meta(property="og:description", content=post.get("excerpt", "")),
+        Meta(property="og:image", content=full_image_url),
+        Meta(property="og:url", content=f"https://{blog_url}/posts/{post['slug']}"),
+        Meta(name="twitter:card", content="summary"),
+        Meta(name="twitter:title", content=post["title"]),
+        Meta(name="twitter:description", content=post.get("excerpt", "")),
+        Meta(name="twitter:image", content=full_image_url),
+        Meta(name="twitter:creator", content="@efels_com")
     ]
 
 # For global headers (site-wide)
@@ -170,11 +177,13 @@ def BlogCard(post):
 def get_post(slug: str, request=None):
     with open(f'posts/{slug}.md', 'r') as file:
         content = file.read()
-    post_content = content.split('---')[2]
     frontmatter = yaml.safe_load(content.split('---')[1])
     frontmatter['slug'] = slug
+    post_content = content.split('---')[2]
 
     content = Div(
+        *social_meta("twitter", frontmatter),  # Add meta tags for the post
+        *social_meta("og", frontmatter),
         H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
         P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
         Div(render_md(post_content), cls="prose max-w-none"),
