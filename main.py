@@ -55,6 +55,32 @@ def social_links():
                 target="_blank" if not url.startswith('mailto:') else None) for icon, url in links],
                 cls="flex gap-3 mt-0 mb-1 text-muted-foreground"
                 )
+def ShareButtons(slug, title):
+    base_url = "https://www.blog.efels.com"  # Replace with your actual base URL
+    url = f"{base_url}/posts/{slug}"
+    
+    def ShareAnchor(icon, href, tooltip):
+        return A(UkIcon(icon, height=16, width=16), 
+                href=href, 
+                target="_blank", 
+                cls="hover:text-primary transition-colors p-2",
+                uk_tooltip=tooltip)
+    
+    copy_script = """
+        navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+    """
+    
+    return Div(
+        ShareAnchor("twitter", f"https://twitter.com/intent/tweet?text={title}&url={url}", "Share on Twitter"),
+        ShareAnchor("linkedin", f"https://www.linkedin.com/sharing/share-offsite/?url={url}", "Share on LinkedIn"),
+        ShareAnchor("flower", f"https://bsky.app/intent/compose?text={title}&url={url}", "Share on Bluesky"),
+        Button(UkIcon("link", height=16, width=16), 
+               cls="hover:text-primary transition-colors p-2",
+               uk_tooltip="Copy link",
+               onclick=copy_script),
+        cls="flex items-center gap-2"
+    )
 
 def search_bar():
     return A(Input(placeholder='search'))
@@ -183,10 +209,11 @@ def get_post(slug: str, request=None):
     post_content = content.split('---')[2]
 
     content = Div(
-        *social_meta("twitter", frontmatter),  # Add meta tags for the post
+        *social_meta("twitter", frontmatter), 
         *social_meta("og", frontmatter),
         H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
         P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
+        ShareButtons(slug, frontmatter["title"]),  # Added ShareButtons here
         Div(render_md(post_content), cls="prose max-w-none"),
         cls="w-full px-8 py-4",
         id="main-content"
