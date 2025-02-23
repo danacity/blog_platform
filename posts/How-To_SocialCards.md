@@ -1,6 +1,6 @@
 ---
 title: How-to add Social (Twitter) Cards
-date: 2025-02-16T10:30:00+01:00
+date: 2025-02-22T10:30:00+01:00
 draft: false
 excerpt: How to add Social Cards to your FastHTML blog
 tags:

@@ -1,6 +1,6 @@
 ---
 title: How-to change the HTML Title
-date: 2025-01-10T14:30:00+01:00
+date: 2025-02-20T14:30:00+01:00
 draft: false
 excerpt: How to edit the HTML title from (FastHTML Page)
 tags: 

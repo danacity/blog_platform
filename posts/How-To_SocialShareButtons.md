@@ -1,6 +1,6 @@
 ---
 title: How-to add Social Sharing Buttons
-date: 2025-02-16T10:30:00+01:00
+date: 2025-02-23T10:30:00+01:00
 draft: false
 excerpt: If you want people to share you work, make it easy give them a button. 
 tags:
