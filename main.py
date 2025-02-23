@@ -41,8 +41,9 @@ def social_meta(platform, post=None, type="website"):
    ]
 
 # For global headers (site-wide)
-og_headers = social_meta(None)
-hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] + og_headers
+#og_headers = social_meta(None)
+hdrs = Theme.blue.headers() + [MarkdownJS(), HighlightJS()] #+ og_headers
+
 app, rt = fast_app(hdrs=hdrs, live=True)
 
 def social_links():
@@ -55,6 +56,7 @@ def social_links():
                 target="_blank" if not url.startswith('mailto:') else None) for icon, url in links],
                 cls="flex gap-3 mt-0 mb-1 text-muted-foreground"
                 )
+
 def ShareButtons(slug, title):
     base_url = "https://www.blog.efels.com"  # Replace with your actual base URL
     url = f"{base_url}/posts/{slug}"
@@ -200,27 +202,32 @@ def BlogCard(post):
             cls="flex items-center justify-between"
         ))
 
+@rt('/public/{rest_of_path:path}')
+def serve_public(rest_of_path: str):
+    return FileResponse(f"public/{rest_of_path}")
+
 @rt('/posts/{slug}')
 def get_post(slug: str, request=None):
     with open(f'posts/{slug}.md', 'r') as file:
-        content = file.read()
-    frontmatter = yaml.safe_load(content.split('---')[1])
+        parts = file.read().split('---', 2)
+        if len(parts) != 3:
+            return "Invalid post format"
+            
+    frontmatter = yaml.safe_load(parts[1])
     frontmatter['slug'] = slug
-    post_content = content.split('---')[2]
-
+    post_content = parts[2]
+    
     content = Div(
         *social_meta("twitter", frontmatter), 
-        *social_meta("og", frontmatter),
         H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
         P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
-        ShareButtons(slug, frontmatter["title"]),  # Added ShareButtons here
+        ShareButtons(slug, frontmatter["title"]),  
         Div(render_md(post_content), cls="prose max-w-none"),
         cls="w-full px-8 py-4",
         id="main-content"
     )
 
     return content if request.headers.get('HX-Request') else Container(header_content(), content)
-
 # def blog_grid(posts):
 #     return Grid(*[BlogCard(p) for p in posts],
 #                 cols_sm=1, cols_md=1, cols_lg=2, cols_xl=3, 
