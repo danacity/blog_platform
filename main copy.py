@@ -310,7 +310,42 @@ def collapsible_calendly():
 #     )
 
 #     return content if request.headers.get('HX-Request') else Container(header_content(), content)
+def more_dropdown():
+    return Div(
+        Button(
+            DivLAligned(
+                UkIcon('more-horizontal', height=16, width=16, stroke_width=2),
+                "More",
+                cls='flex items-center gap-1'
+            ),
+            cls=[ButtonT.ghost, "hover:bg-secondary hover:text-primary"]
+        ),
+        DropDownNavContainer(
+            Li(A(
+                DivLAligned(UkIcon('mail', height=16, width=16), "Subscribe to Newsletter"),
+                href="#subscribe-section",
+                cls="hover:bg-accent"
+            )),
+            Li(A(
+                DivLAligned(UkIcon('calendar', height=16, width=16), "Book a Meeting"),
+                onclick="document.getElementById('calendly-toggle').click(); return false;",
+                cls="hover:bg-accent cursor-pointer"
+            ))
+        )
+    )
 
+def header_content():
+    return NavContainer(
+        DivLAligned(
+            Div(hamburger_button(), vertical_divider(), home_button(), cls="flex items-center"),
+            Div(H1("Daniel Armstrong", cls=[TextT.primary, "text-2xl font-bold"]), social_links(), cls="flex flex-col")
+        ),
+        DivRAligned(
+            Div(search_bar(), gallery_link(), theme_switcher(), more_dropdown(), cls="flex flex-col md:flex-row items-end gap-2"),
+            cls="gap-5"
+        ),
+        cls="bg-card border-b border-10 border-primary/50 shadow-lg sticky top-0 rounded-lg z-50 flex items-center justify-between"
+    )
 
 def page_contents():
     return Div(
@@ -318,8 +353,8 @@ def page_contents():
         Div(
             NavContainer(
                 id="post-toc",
-                uk_scrollspy_nav=True,
-                cls="max-h-[300px] overflow-y-auto"
+                uk_scrollspy_nav="closest: li; scroll: true; cls: uk-active",
+                cls="max-h-[300px] overflow-y-auto uk-nav-default"
             ),
             # This script generates the table of contents with HTMX support
             Script("""
@@ -362,14 +397,6 @@ def page_contents():
                     listItem.appendChild(link);
                     tocContainer.appendChild(listItem);
                 });
-                
-                // Reinitialize UIkit scrollspy
-                if (UIkit && UIkit.scrollspyNav) {
-                    UIkit.scrollspyNav(tocContainer, {
-                        closest: 'li',
-                        scroll: true
-                    });
-                }
             }
 
             // Initialize on page load
@@ -389,34 +416,134 @@ def page_contents():
         cls="bg-card p-4 rounded-lg shadow-sm border border-primary/20"
     )
 
-# 2. Update the navigation_panel function to include links for subscribe and booking
-def navigation_panel(posts):
+def create_filter_container(posts, active_tag=None, active_diataxis=None):
+    unique_tags = sorted(set(tag for post in posts if post.get('tags') for tag in post['tags']))
+    unique_diataxis = sorted(set(d for post in posts if post.get('Diataxis') for d in post['Diataxis']))
+    
     return NavContainer(
-        NavHeaderLi("Blog Posts"),
+        NavHeaderLi("Filters"),
+        Div(
+            TabContainer(
+                Li(A("All", href="#all-tab", id="all-tab-link", cls="uk-active")),
+                Li(A("Tags", href="#tags-tab", id="tags-tab-link")),
+                Li(A("Diataxis", href="#diataxis-tab", id="diataxis-tab-link")),
+                uk_switcher="connect: #filter-tabs-container; animation: uk-animation-fade",
+                alt=True,
+                cls="uk-tab-small"
+            ),
+            Div(
+                Li(
+                    NavContainer(
+                        Li(A("All Posts", 
+                            hx_get="/filter", 
+                            hx_target="#main-content",
+                            cls="hover:bg-accent"))
+                    ),
+                    cls="uk-active"
+                ),
+                Li(
+                    NavContainer(
+                        *[Li(A(tag, 
+                              hx_get=f"/filter?tag={tag}", 
+                              hx_target="#main-content",
+                              cls="hover:bg-accent")) for tag in unique_tags]
+                    )
+                ),
+                Li(
+                    NavContainer(
+                        *[Li(A(d, 
+                              hx_get=f"/filter?diataxis={d}", 
+                              hx_target="#main-content",
+                              cls="hover:bg-accent")) for d in unique_diataxis]
+                    )
+                ),
+                id="filter-tabs-container",
+                cls="uk-switcher"
+            ),
+            cls="mb-4"
+        ),
+        cls=f"{NavT.secondary} bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm m-2 p-4"
+    )
+
+def create_page_contents_container():
+    return NavContainer(
+        NavHeaderLi("Page Contents"),
+        NavContainer(
+            id="post-toc",
+            uk_scrollspy_nav="closest: li; scroll: true; cls: uk-active",
+            cls="uk-nav max-h-[200px] overflow-y-auto"
+        ),
+        cls=f"{NavT.secondary} bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm m-2 p-4"
+    )
+
+def create_newsletter_container():
+    return NavContainer(
+        NavHeaderLi("Newsletter"),
+        Li(Form(
+            Input(
+                type="email", 
+                placeholder="Your email", 
+                required=True,
+                cls="w-full p-2 border border-primary/30 rounded-md mb-2"
+            ),
+            Button(
+                "Subscribe", 
+                type="submit",
+                cls="w-full bg-primary text-primary-foreground hover:bg-primary/80 p-2 rounded-md"
+            ),
+            action="/subscribe", 
+            method="POST",
+            cls="space-y-3"
+        )),
+        cls=f"{NavT.secondary} bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow-sm m-2 p-4"
+    )
+
+def create_meeting_container():
+    return NavContainer(
+        NavHeaderLi("Book a Meeting"),
+        Li(
+            Button(
+                "Schedule a call",
+                id="nav-calendly-toggle",
+                cls="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 p-2 rounded-md",
+                onclick="const mainToggle = document.getElementById('calendly-toggle'); if(mainToggle) mainToggle.click(); return false;"
+            ),
+            cls="p-2"
+        ),
+        cls=f"{NavT.secondary} bg-amber-50 dark:bg-amber-900/20 rounded-lg shadow-sm m-2 p-4"
+    )
+
+def create_posts_container(posts):
+    return NavContainer(
+        NavHeaderLi("Latest Posts"),
         *[Li(A(post["title"], 
               hx_get=f"/posts/{post['slug']}", 
               hx_target="#main-content",  
               hx_push_url="true", 
-              cls="hover:bg-accent")) for post in posts],
-        NavHeaderLi("Connect"),
-        Li(
-            A(
-                UkIcon("mail", height=16, width=16), 
-                "Subscribe to Newsletter", 
-                href="#subscribe-section",
-                cls="hover:bg-accent flex items-center gap-2"
-            )
-        ),
-        Li(
-            A(
-                UkIcon("calendar", height=16, width=16),
-                "Book a Meeting", 
-                onclick="document.getElementById('calendly-toggle').click(); return false;",
-                cls="hover:bg-accent flex items-center gap-2 cursor-pointer"
-            )
-        ),
-        uk_nav=True,
-        cls=f"{NavT.secondary} border-r border-primary/50 hidden w-64 mt-4",
+              cls="hover:bg-accent")) for post in posts[:5]],
+        cls=f"{NavT.secondary} bg-gray-50 dark:bg-gray-800/40 rounded-lg shadow-sm m-2 p-4"
+    )
+
+def create_posts_container(posts):
+    return NavContainer(
+        NavHeaderLi("Latest Posts"),
+        *[Li(A(post["title"], 
+              hx_get=f"/posts/{post['slug']}", 
+              hx_target="#main-content",  
+              hx_push_url="true", 
+              cls="hover:bg-accent")) for post in posts[:5]],
+        cls=f"{NavT.secondary} bg-gray-50 dark:bg-gray-800/40 rounded-lg shadow-sm m-2 p-4"
+    )
+
+def navigation_panel(posts, active_tag=None, active_diataxis=None):
+    return Div(
+        create_filter_container(posts, active_tag, active_diataxis),
+        create_page_contents_container(),
+        create_newsletter_container(),
+        create_meeting_container(),
+        create_posts_container(posts),
+        cls="border-r border-primary/50 overflow-y-auto max-h-screen",
+        style="width: 30rem;",  # Using inline style to set width
         id="nav-panel"
     )
 # 3. Update the get_post function to include the enhanced sidebar
@@ -440,10 +567,9 @@ def get_post(slug: str, request=None):
         cls="w-full lg:w-3/4 px-8 py-4"
     )
     
-    # Create the enhanced right sidebar
+    # Create the right sidebar (without the calendly widget)
     sidebar = Div(
         mailing_list_signup(),
-        collapsible_calendly(),
         page_contents(),
         cls="hidden lg:block lg:w-1/4 p-4 sticky top-20 self-start"
     )
