@@ -16,10 +16,9 @@ In 2019 I was obsessed with the idea of creating a location2vector tool, what wo
 When I stumbled upon Maidenhead in 2019 while looking for ways to measure distances between airports and specific locations, I thought I'd found a simple solution. Little did I know this would lead me down a fascinating path of geospatial data handling and tensor operations.
 
 Maidenhead is commonly used in amateur radio operators, and pilots. I just liked the picture, but it turns out to have some very neat properties. 
-Other names for it are The QTH locator, the QRA Locatore, WW Grid Locator or Maidenhead. 
-Elements of the grid system 18*18 324 very large areas named fileds, each field is divited by 100 squares, and each square is divided into 576 sub-squares
-the Field is two letter, the square is two numbers and the sub-square is two letters. 
-and because of that you can make a pretty small area with six digits that covers the whole world. you can even add two more number and two more letters to get a really small area. For a more complete example you can check out https://www.dxzone.com/grid-square-locator-system-explained/. 
+Other names for it are The QTH, the QRA, WW Grid or Maidenhead. 
+Elements of the grid system 18*18 324 very large areas named fileds, each field is divited by 100 squares, and each square is divided into 576 sub-squares the Field is two letter(A-R), the square is two numbers and the sub-square is two letters(A-X). 
+and because of that you can make a pretty small area with six digits that covers the whole world. You can even add two more number and two more letters to get a really small area. For a more complete example you can check out https://www.dxzone.com/grid-square-locator-system-explained/. 
 
 ![USA map maidenhead](/public/images/maidenhead.jpg)
 
@@ -40,16 +39,16 @@ df = df[(df.iso_country == "US")]
 # US airports only # Convert coordinates to numeric values 
 df['latitude_deg'] = pd.to_numeric(df['latitude_deg'], errors='coerce') df['longitude_deg'] = pd.to_numeric(df['longitude_deg'], errors='coerce') print(f"Found {len(df)} medium and large US airports")`
 ```
-I wanted a system that could help me understand the relationship between these airports and their surrounding areas. The hypothesis was simple - any location data is most relevant within a certain proximity to the point of interest. But how to efficiently calculate this proximity?
+I wanted a system that could help me understand the relationship between these airports and their surrounding areas. The hypothesis was simple - any location data is most relevant within a certain proximity to the point of interest, but how to efficiently calculate this proximity?
 ![Chicago map maidenhead](/public/images/maidenhead_chicago.png)
 
 That's when I discovered the Maidenhead system. Looking at a Maidenhead map, I realized Chicago sits in grid cell EN61, and it seemed logical that information from adjacent cells (EN50, EN51, EN52, EN60, EN61, EN62, EN70, EN71, EN72) would all contain data relevant to understanding Chicago.
 
-This led me to a fundamental question: how could I efficiently find all the Maidenhead locators surrounding a given point? The answer, as it turned out, would be found in the power of NumPy broadcasting.
+This led me to a fundamental question: How could I efficiently find all the Maidenhead locators surrounding a given point? The answer, as it turned out, would be found in the power of NumPy Broadcasting.
 
 ## The Problem: Finding Neighboring Grid Squares
 
-My hypothesis was straightforward: when analyzing locations like Chicago (in grid EN61), information from adjacent grid cells would likely contain relevant data. I needed an efficient way to identify all these surrounding cells without writing clunky loops.
+My hypothesis was straightforward: When analyzing locations like Chicago (in grid EN61), information from adjacent grid cells would likely contain relevant data. I needed an efficient way to identify all these surrounding cells without writing clunky loops.
 
 The Maidenhead system encodes locations in pairs of characters that represent increasingly precise divisions of the Earth's surface. Far more interesting than I originally thought
 . The Maidenhead Locator System has more layers for more precise grid location, but for my use two layers are good starting point. In the future I want to test a logarithmically weighted based on proximity measurement, that might provide an even better understanding of location, this is based on the thought that the closer you are to an area of interest the more important that the location distance matters.
