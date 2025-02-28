@@ -15,6 +15,12 @@ In 2019 I was obsessed with the idea of creating a location2vector tool, what wo
 
 When I stumbled upon Maidenhead in 2019 while looking for ways to measure distances between airports and specific locations, I thought I'd found a simple solution. Little did I know this would lead me down a fascinating path of geospatial data handling and tensor operations.
 
+Maidenhead is commonly used in amateur radio operators, and pilots. I just liked the picture, but it turns out to have some very neat properties. 
+Other names for it are The QTH locator, the QRA Locatore, WW Grid Locator or Maidenhead. 
+Elements of the grid system 18*18 324 very large areas named fileds, each field is divited by 100 squares, and each square is divided into 576 sub-squares
+the Field is two letter, the square is two numbers and the sub-square is two letters. 
+and because of that you can make a pretty small area with six digits that covers the whole world. you can even add two more number and two more letters to get a really small area. For a more complete example you can check out https://www.dxzone.com/grid-square-locator-system-explained/. 
+
 ![USA map maidenhead](/public/images/maidenhead.jpg)
 
 
