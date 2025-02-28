@@ -1,6 +1,6 @@
 ---
 title: Tobler, Broadcasting, and Maidenhead
-date: 2019-07-28
+date: 2019-07-28T10:30:00+01:00
 draft: false
 excerpt: My very 1st blog post (colab notebook from 2019) about how to solve a Maidenhead problem using broadcasting .
 tags:
