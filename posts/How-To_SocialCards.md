@@ -5,6 +5,7 @@ draft: false
 excerpt: How to add Social Cards to your FastHTML blog
 tags:
   - FastHTML
+  - social
 Diataxis:
   - How-To
 ---

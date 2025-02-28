@@ -1,7 +1,7 @@
 ---
 title: Tobler, Broadcasting, and Maidenhead
 date: 2019-07-28
-draft: true
+draft: false
 excerpt: My very 1st blog post (colab notebook from 2019) about how to solve a Maidenhead problem using broadcasting .
 tags:
   - Geospatial
@@ -9,13 +9,13 @@ Diataxis:
   - Explanation
 ---
 ## 2019 - Tobler's 1st Law of Geography
-''Everything is related to everything else. But near things are more related than distant things. - Waldo R. Tobler -1969'' geospatial
+''Everything is related to everything else. But near things are more related than distant things. - Waldo R. Tobler -1969'' 
 
 In 2019 I was obsessed with the idea of creating a location2vector tool, what would convert a location in time into a vector representation of what it meant to be in that location at that time. This idea lasted for a few years where I amassed a huge amount of data most of it open sourced from airports, to census data, to liquor sales, commercial real estate listings, and much more. 
 
 When I stumbled upon Maidenhead in 2019 while looking for ways to measure distances between airports and specific locations, I thought I'd found a simple solution. Little did I know this would lead me down a fascinating path of geospatial data handling and tensor operations.
 
-![USA map maidenhead](maidenhead.png)
+![USA map maidenhead](/public/images/maidenhead.jpg)
 
 
 ## The Airport Problem - Where It All Started
@@ -255,8 +255,7 @@ Create a n_row by n_cols array of all ones
 ```python
 import numpy as np
 x = np.ones((n_rows,n_cols), dtype=np.int);x, x.shape
-```
-```
+
 (array([[1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1],
@@ -268,8 +267,7 @@ x = np.ones((n_rows,n_cols), dtype=np.int);x, x.shape
 row_a= np.arange(n_rows)[np.newaxis] # or np.arange(row_a).reshape((1,5))
 col_a= np.arange(n_cols)[:, np.newaxis] # or np.arange(col_a).reshape((5,1))
 col_a, col_a.shape
-```
-```
+
 (array([[0],
         [1],
         [2],
@@ -283,8 +281,7 @@ cn = col_a[::-1]-n; cn
 
 #Equivalent to m[::-1,...]. Does not require the array to be two-dimensional
 #The dots (...) represent as many colons as needed to produce a complete indexing tuple
-```
-```
+
 array([[ 2],
        [ 1],
        [ 0],
@@ -294,8 +291,7 @@ array([[ 2],
 
 ```python
 lat_adj= cn * x; lat_adj
-```
-```
+
 array([[ 2,  2,  2,  2,  2],
        [ 1,  1,  1,  1,  1],
        [ 0,  0,  0,  0,  0],
@@ -305,23 +301,20 @@ array([[ 2,  2,  2,  2,  2],
 
 ```python
 row_a, row_a.shape
-```
-```
+
 (array([[0, 1, 2, 3, 4]]), (1, 5))
 ```
 
 ```python
 rn= row_a -n; rn
-```
-```
+
 array([[-2, -1,  0,  1,  2]])
 ```
 
 ```python
 lon_adj= rn * x
 lon_adj
-```
-```
+
 array([[-2, -1,  0,  1,  2],
        [-2, -1,  0,  1,  2],
        [-2, -1,  0,  1,  2],
@@ -363,8 +356,7 @@ Broadcasting allows you to add the subject cell value to the latitude and longit
 lat_array = lat_adj + m_cell_lat
 lon_array = lon_adj + m_cell_lon
 lat_array, lon_array
-```
-```
+
 (array([[52089, 52089, 52089, 52089, 52089],
         [52088, 52088, 52088, 52088, 52088],
         [52087, 52087, 52087, 52087, 52087],
@@ -381,8 +373,7 @@ We have already created a fuction(cell2maidenhead) that can convert a cell to a 
 ```python
 np_cell2maidenhead = np.vectorize(cell2maidenhead)
 np_maids = np_cell2maidenhead(lat_array,lon_array); np_maids
-```
-```
+
 array([['EM61rj', 'EM61sj', 'EM61tj', 'EM61uj', 'EM61vj'],
        ['EM61ri', 'EM61si', 'EM61ti', 'EM61ui', 'EM61vi'],
        ['EM61rh', 'EM61sh', 'EM61th', 'EM61uh', 'EM61vh'],
@@ -392,8 +383,7 @@ array([['EM61rj', 'EM61sj', 'EM61tj', 'EM61uj', 'EM61vj'],
 Great it looks like we have the maidenheads that we want, now we need to convert them to a list. we can use the np.tolist() to convert to a list.
 ```python
 l = np_maids.tolist(); l
-```
-```
+
 [['EM61rj', 'EM61sj', 'EM61tj', 'EM61uj', 'EM61vj'],
  ['EM61ri', 'EM61si', 'EM61ti', 'EM61ui', 'EM61vi'],
  ['EM61rh', 'EM61sh', 'EM61th', 'EM61uh', 'EM61vh'],
@@ -406,8 +396,7 @@ The tolist() function returned a list but it is a nested list(list of lists), lo
 f_lat = lat_array.flatten()
 f_lon = lon_array.flatten()
 f_lat, f_lon
-```
-```
+
 (array([52089, 52089, 52089, 52089, 52089, 52088, 52088, 52088, 52088,
         52088, 52087, 52087, 52087, 52087, 52087, 52086, 52086, 52086,
         52086, 52086, 52085, 52085, 52085, 52085, 52085]),
@@ -423,8 +412,7 @@ Convert flattened maidenhead array to list
 ```python
 maidenhead_list = maidenhead_array.tolist()
 maidenhead_list
-```
-```
+
 ['EM61rj', 'EM61sj', 'EM61tj', 'EM61uj', 'EM61vj', 'EM61ri', 'EM61si', 'EM61ti', 'EM61ui', 'EM61vi', 'EM61rh', 'EM61sh', 'EM61th', 'EM61uh', 'EM61vh', 'EM61rg', 'EM61sg', 'EM61tg', 'EM61ug', 'EM61vg', 'EM61rf', 'EM61sf', 'EM61tf', 'EM61uf', 'EM61vf']
 ```
 
@@ -501,8 +489,6 @@ def maidenheads(lat, lon, n=0):
 ```python
 t = maidenheads(31.308800,-86.393799,2)
 t
-```
-```
 ['EM61rj', 'EM61sj', 'EM61tj', 'EM61uj', 'EM61vj', 'EM61ri', 'EM61si', 'EM61ti', 'EM61ui', 'EM61vi', 'EM61rh', 'EM61sh', 'EM61th', 'EM61uh', 'EM61vh', 'EM61rg', 'EM61sg', 'EM61tg', 'EM61ug', 'EM61vg', 'EM61rf', 'EM61sf', 'EM61tf', 'EM61uf', 'EM61vf']
 ```
 
