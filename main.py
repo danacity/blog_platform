@@ -3,7 +3,21 @@ from monsterui.all import *
 from datetime import datetime, date
 from pathlib import Path
 import yaml
-#from fasthtml.components import Uk_theme_switcher
+
+# Import the mailing_list functionality
+from mailing_list import (
+    mailing_list_signup,
+    handle_subscription,
+    confirm_email,
+    view_subscribers,
+    test_db,
+    test_add_email,
+    test_insert,
+    initialize_subscribers_table
+)
+
+# Initialize the subscribers table when the app starts
+initialize_subscribers_table()
 
 def social_meta(platform, post=None, type="website"):
    blog_url = "www.blog.efels.com"
@@ -95,11 +109,6 @@ def gallery_link():
         cls=[AT.primary + " hover:bg-secondary hover:text-primary"]
     )
 
-# def theme_switcher():
-#     return Div(
-#                 A(Button(UkIcon('palette', height=16, width=16, stroke_width=2), "Appearance", cls='flex items-center gap-1'),cls=[AT.primary, "hover:bg-secondary hover:text-primary"]),
-#                 DropDownNavContainer(Div(Uk_theme_switcher(), cls="space-y-8 p-8 min-w-[350px] min-h-[150px] bg-background rounded-lg"))
-#             )
 def theme_switcher():
     return Div(A(Button(UkIcon('palette', height=16, width=16, stroke_width=2), 
                         "Appearance", cls='flex items-center gap-1'), cls=[AT.primary, "hover:bg-secondary hover:text-primary"]),
@@ -127,20 +136,21 @@ def header_content():
             Div(search_bar(),gallery_link(),theme_switcher(),cls="flex flex-col md:flex-row items-end gap-2"),
             cls="gap-5"
         ),
-        cls="bg-card border-b border-10 border-primary/50 shadow-lg sticky top-0 rounded-lg z-50 flex items-center justify-between"  # Added flex, items-center, and justify-between
+        cls="bg-card border-b border-10 border-primary/50 shadow-lg sticky top-0 rounded-lg z-50 flex items-center justify-between"
     )
 
 def navigation_panel(posts):
     return NavContainer(
-        #NavHeaderLi("Blog Posts", cls=TextT.primary),
         NavHeaderLi("Blog Posts"),
         *[Li(A(post["title"], 
               hx_get=f"/posts/{post['slug']}", 
               hx_target="#main-content",  
               hx_push_url="true", 
               cls="hover:bg-accent")) for post in posts],
-        uk_nav=True,
-        cls=f"{NavT.secondary} border-r border-primary/50 hidden w-64 mt-4",  # Removed mt-4
+        NavHeaderLi("Connect"),
+        Li(A(UkIcon("mail", height=16, width=16), "Subscribe to Newsletter", href="#subscribe-section",cls="hover:bg-accent flex items-center gap-2")),
+        Li(A(UkIcon("calendar", height=16, width=16),"Book a Meeting", onclick="document.getElementById('calendly-toggle').click(); return false;",cls="hover:bg-accent flex items-center gap-2 cursor-pointer")
+        ),uk_nav=True,cls=f"{NavT.secondary} border-r border-primary/50 hidden w-64 mt-4",
         id="nav-panel"
     )
 
@@ -206,34 +216,32 @@ def BlogCard(post):
 def serve_public(rest_of_path: str):
     return FileResponse(f"public/{rest_of_path}")
 
-def mailing_list_signup():
-    return Div(
-        H3("Subscribe to my Newsletter", cls="text-lg font-bold mb-2 text-primary"),
-        P("Get the latest updates directly to your inbox", 
-          cls="text-sm text-muted-foreground mb-3"),
-        Form(
-            Div(
-                Input(
-                    type="email", 
-                    placeholder="Your email address", 
-                    required=True,
-                    cls="w-full p-2 border border-primary/30 rounded-md mb-2"
-                ),
-                Button(
-                    "Subscribe", 
-                    type="submit",
-                    cls="w-full bg-primary text-primary-foreground hover:bg-primary/80 p-2 rounded-md"
-                ),
-                cls="flex flex-col"
-            ),
-            # Replace with your actual form submission endpoint
-            action="/subscribe", 
-            method="POST"
-        ),
-        cls="bg-card p-4 rounded-lg shadow-sm border border-primary/20 mb-4"
-    )
+# Route handlers for mailing list - use the imported functions
+@rt('/subscribe')
+async def subscribe_route(request, email: str = ''):
+    return await handle_subscription(request, email)
 
-# 2. Create a collapsible Calendly widget
+@rt('/confirm-email/{token}')
+async def confirm_email_route(token: str, request):
+    return await confirm_email(request, token)
+
+@rt('/view-subscribers')
+async def subscribers_route(request):
+    return await view_subscribers(request)
+
+@rt('/test-db')
+async def test_db_route(request):
+    return await test_db(request)
+
+@rt('/test-add-email/{email}')
+async def test_email_route(email: str, request):
+    return await test_add_email(email, request)
+
+@rt('/test-insert')
+async def test_insert_route(request):
+    return await test_insert(request)
+
+# Collapsible Calendly widget
 def collapsible_calendly():
     toggle_script = """
         const calContainer = document.getElementById('calendly-container');
@@ -271,55 +279,14 @@ def collapsible_calendly():
         cls="bg-card p-4 rounded-lg shadow-sm border border-primary/20 mb-4"
     )
 
-
-# @rt('/posts/{slug}')
-# def get_post(slug: str, request=None):
-#     with open(f'posts/{slug}.md', 'r') as file:
-#         parts = file.read().split('---', 2)
-#         if len(parts) != 3:
-#             return "Invalid post format"
-            
-#     frontmatter = yaml.safe_load(parts[1])
-#     frontmatter['slug'] = slug
-#     post_content = parts[2]
-    
-#     # Create the main content
-#     post_content_div = Div(
-#         H1(frontmatter["title"], cls="text-4xl font-bold mb-2"),
-#         P(frontmatter['date'].strftime("%B %d, %Y"), cls="text-muted-foreground mb-4"),
-#         ShareButtons(slug, frontmatter["title"]),  
-#         Div(render_md(post_content), cls="prose max-w-none"),
-#         cls="w-full lg:w-3/4 px-8 py-4"
-#     )
-    
-#     # Create the right sidebar with Calendly
-#     sidebar = Div(
-#         calendly_widget(),
-#         cls="hidden lg:block lg:w-1/4 p-4 sticky top-20 self-start"
-#     )
-    
-#     # Combine main content and sidebar
-#     content = Div(
-#         *social_meta("twitter", frontmatter),
-#         Div(
-#             post_content_div,
-#             sidebar,
-#             cls="flex flex-wrap",
-#             id="main-content"
-#         )
-#     )
-
-#     return content if request.headers.get('HX-Request') else Container(header_content(), content)
-
-
 def page_contents():
     return Div(
         H3("Page Contents", cls="text-lg font-bold mb-2 text-primary"),
         Div(
             NavContainer(
                 id="post-toc",
-                uk_scrollspy_nav=True,
-                cls="max-h-[300px] overflow-y-auto"
+                uk_scrollspy_nav="closest: li; scroll: true; cls: uk-active",
+                cls="max-h-[300px] overflow-y-auto uk-nav-default"
             ),
             # This script generates the table of contents with HTMX support
             Script("""
@@ -362,14 +329,6 @@ def page_contents():
                     listItem.appendChild(link);
                     tocContainer.appendChild(listItem);
                 });
-                
-                // Reinitialize UIkit scrollspy
-                if (UIkit && UIkit.scrollspyNav) {
-                    UIkit.scrollspyNav(tocContainer, {
-                        closest: 'li',
-                        scroll: true
-                    });
-                }
             }
 
             // Initialize on page load
@@ -389,37 +348,32 @@ def page_contents():
         cls="bg-card p-4 rounded-lg shadow-sm border border-primary/20"
     )
 
-# 2. Update the navigation_panel function to include links for subscribe and booking
-def navigation_panel(posts):
+def create_filter_container(posts, active_tag=None, active_diataxis=None):
+    unique_tags = sorted(set(tag for post in posts if post.get('tags') for tag in post['tags']))
+    unique_diataxis = sorted(set(d for post in posts if post.get('Diataxis') for d in post['Diataxis']))
+    
     return NavContainer(
-        NavHeaderLi("Blog Posts"),
-        *[Li(A(post["title"], 
-              hx_get=f"/posts/{post['slug']}", 
-              hx_target="#main-content",  
-              hx_push_url="true", 
-              cls="hover:bg-accent")) for post in posts],
-        NavHeaderLi("Connect"),
-        Li(
-            A(
-                UkIcon("mail", height=16, width=16), 
-                "Subscribe to Newsletter", 
-                href="#subscribe-section",
-                cls="hover:bg-accent flex items-center gap-2"
-            )
+        Div(
+            DivLAligned(
+                H3("Filters", cls="text-lg font-bold"),
+                UkIcon("question", height=16, width=16, uk_tooltip="Filter posts by categories", cls="text-primary/70")),
+            TabContainer(
+                Li(A("All", href="#all-tab", id="all-tab-link", cls="uk-active")),
+                Li(A("Tags", href="#tags-tab", id="tags-tab-link",uk_tooltip="Filter by topic tags")),
+                Li(A("Diataxis", href="#diataxis-tab", id="diataxis-tab-link",uk_tooltip="Filter by documentation type framework")),
+                uk_switcher="connect: #filter-tabs-container; animation: uk-animation-fade", alt=True, cls="uk-tab-small"),
+            Div(
+                Li(NavContainer(Li(A("All Posts", hx_get="/filter", hx_target="#main-content",cls="hover:bg-accent"))),cls="uk-active"),
+                Li(NavContainer(*[Li(A(tag, hx_get=f"/filter?tag={tag}", hx_target="#main-content",uk_tooltip=f"Posts tagged with {tag}",cls="hover:bg-accent")) for tag in unique_tags])),
+                Li(NavContainer(
+                        *[Li(A(d, hx_get=f"/filter?diataxis={d}", hx_target="#main-content",uk_tooltip=f"{d} documentation format",cls="hover:bg-accent")) for d in unique_diataxis]
+                    )),
+                id="filter-tabs-container",cls="uk-switcher"),cls="mb-4"
         ),
-        Li(
-            A(
-                UkIcon("calendar", height=16, width=16),
-                "Book a Meeting", 
-                onclick="document.getElementById('calendly-toggle').click(); return false;",
-                cls="hover:bg-accent flex items-center gap-2 cursor-pointer"
-            )
-        ),
-        uk_nav=True,
-        cls=f"{NavT.secondary} border-r border-primary/50 hidden w-64 mt-4",
-        id="nav-panel"
+        cls=f"{NavT.secondary} bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm m-2 p-4"
     )
-# 3. Update the get_post function to include the enhanced sidebar
+
+# Update the get_post function to include the enhanced sidebar
 @rt('/posts/{slug}')
 def get_post(slug: str, request=None):
     with open(f'posts/{slug}.md', 'r') as file:
@@ -461,56 +415,61 @@ def get_post(slug: str, request=None):
 
     return content if request.headers.get('HX-Request') else Container(header_content(), content)
 
-# 4. Add a route for handling newsletter subscriptions
-@rt('/subscribe', methods=['POST'])
-async def handle_subscription(request):
-    # Get form data using the request object
-    form_data = await request.form()
-    email = form_data.get('email', '')
-    
-    # For now, just return a success message
-    return Div(
-        H2("Thank you for subscribing!"),
-        P(f"We've added {email} to our newsletter."),
-        Button("Return Home", hx_get="/", hx_target="body"),
-        cls="p-8 text-center"
-    )
-
-# def blog_grid(posts):
-#     return Grid(*[BlogCard(p) for p in posts],
-#                 cols_sm=1, cols_md=1, cols_lg=2, cols_xl=3, 
-#                 id="main-content",
-#                 cls=[NavT.secondary, 'gap-4 mt-4 ml-4'])
-
 def blog_grid(posts, active_tag=None, active_diataxis=None):
     unique_tags = sorted(set(tag for post in posts if post.get('tags') for tag in post['tags']))
     unique_diataxis = sorted(set(d for post in posts if post.get('Diataxis') for d in post['Diataxis']))
     
     def get_button_class(is_active):
-        base_class = "px-2 py-1 rounded-lg text-xs "
+        base_class = "px-2 py-1 rounded-lg text-xs w-full text-left "
         return base_class + ("bg-primary text-primary-foreground" if is_active else "bg-primary/20 hover:bg-primary hover:text-primary-foreground")
     
-    return Div(
+    # Active filters section
+    active_filters = Div(
+        DivLAligned(
+            P("Active filters:", cls="font-bold mr-2"),
+            Button(
+                DivLAligned("Clear all filters", UkIcon("x", height=12, width=12, cls="ml-1")),
+                hx_get="/filter",hx_target="#main-content",cls="bg-red-500 text-white px-2 py-1 rounded-lg text-xs mx-1"
+            ),
+            *([Button(DivLAligned(f"Tag: {active_tag}", UkIcon("x", height=12, width=12, cls="ml-1")),
+                hx_get=f"/filter" + (f"?diataxis={active_diataxis}" if active_diataxis else ""),
+                hx_target="#main-content",
+                cls="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-xs mx-1")] if active_tag else []),
+            *([Button(DivLAligned(f"Diataxis: {active_diataxis}", UkIcon("x", height=12, width=12, cls="ml-1")),
+                hx_get=f"/filter" + (f"?tag={active_tag}" if active_tag else ""), hx_target="#main-content",cls="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-xs mx-1")] if active_diataxis else []),
+            cls="flex flex-wrap items-center mb-4"),
+        cls="mb-4"
+    ) if active_tag or active_diataxis else ""
+    
+    # Filters grid layout
+    filter_grid = Grid(
+        # Tags column
         Div(
-            Button("All", hx_get="/filter", hx_target="#main-content",cls=get_button_class(not active_tag and not active_diataxis)),
-            vertical_divider(),
+            H3("Tags", cls="font-bold mb-2 text-primary"),
             Div(
-                Span("Tags:", cls="text-sm font-bold mr-2"),
-                *[Button(tag, hx_get=f"/filter?tag={tag}", hx_target="#main-content", cls=get_button_class(tag == active_tag)
+                *[Button(
+                    tag, 
+                    hx_get=f"/filter?tag={tag}" + (f"&diataxis={active_diataxis}" if active_diataxis else ""), 
+                    hx_target="#main-content",
+                    cls=get_button_class(tag == active_tag)
                 ) for tag in unique_tags],
-                cls="flex items-center gap-2"
+                cls="space-y-1"
             ),
-            vertical_divider(),
-            Div(
-                Span("Diataxis:", cls="text-sm font-bold mr-2"),
-                *[Button(d, hx_get=f"/filter?diataxis={d}", hx_target="#main-content",cls=get_button_class(d == active_diataxis)) for d in unique_diataxis],
-                cls="flex items-center gap-2"
-            ),
-            cls="flex items-center mb-4"
+            cls="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg"
         ),
-        Grid(
-            *[BlogCard(p) for p in posts],
-            cols_sm=1, cols_md=1, cols_lg=2, cols_xl=3,
+        # Diataxis column
+        Div(
+            H3("Diataxis", cls="font-bold mb-2 text-primary"),
+            Div(*[Button(d, hx_get=f"/filter?diataxis={d}" + (f"&tag={active_tag}" if active_tag else ""),hx_target="#main-content",cls=get_button_class(d == active_diataxis)) for d in unique_diataxis],
+                cls="space-y-1"),
+            cls="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg"
+        ),
+        cols=2,
+        cls="gap-4 mb-6"
+    )
+    
+    return Div(filter_grid, active_filters,
+       Grid(*[BlogCard(p) for p in posts],cols_sm=1, cols_md=1, cols_lg=2, cols_xl=3,
             cls="gap-4"
         ),
         id="main-content"
@@ -519,15 +478,12 @@ def blog_grid(posts, active_tag=None, active_diataxis=None):
 @rt('/filter')
 def filter_posts(tag: str = None, diataxis: str = None):
     posts = read_posts()
-    
+    filtered_posts = posts
     if tag:
-        filtered_posts = [p for p in posts if p.get('tags') and tag in p['tags']]
-        return blog_grid(filtered_posts, active_tag=tag)
-    elif diataxis:
-        filtered_posts = [p for p in posts if p.get('Diataxis') and diataxis in p['Diataxis']]
-        return blog_grid(filtered_posts, active_diataxis=diataxis)
-    
-    return blog_grid(posts)
+        filtered_posts = [p for p in filtered_posts if p.get('tags') and tag in p['tags']]
+    if diataxis:
+        filtered_posts = [p for p in filtered_posts if p.get('Diataxis') and diataxis in p['Diataxis']]
+    return blog_grid(filtered_posts, active_tag=tag, active_diataxis=diataxis)
 
 @rt
 def index():
