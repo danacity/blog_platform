@@ -5,7 +5,7 @@ draft: false
 excerpt: If you want people to share your work, make it easy, give them a button. 
 tags:
   - FastHTML
-  - social
+  - Social
 Diataxis:
   - How-To
 ---
